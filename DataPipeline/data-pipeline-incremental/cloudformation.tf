@@ -1,0 +1,246 @@
+resource "aws_cloudformation_stack" "network" {
+  name = "${var.CloudFormationStackName}${terraform.workspace}"
+
+  parameters {
+    myEmrMasterInstanceType = "${var.EmrMasterInstanceType}"
+    myEmrCoreInstanceType   = "${var.EmrCoreInstanceType}"
+    myEmrCoreInstanceCount  = "${var.EmrCoreInstanceCount}"
+    myDbTable               = "${var.DbTable}"
+    myDbSchema              = "${var.DbSchema}"
+    myS3ResultDataPath      = "${var.S3ResultDataPath}"
+    myS3PipelineLogUrl      = "${var.S3PipelineLogUrl}"
+    myS3SqoopJobStateUrl    = "${var.S3SqoopJobStateUrl}"
+    myJDBCDriverUrl         = "${var.JDBCDriverUrl}"
+    myDataPipelineName      = "${var.DataPipelineName}-${terraform.workspace}"
+    myStartDateTime         = "${var.StartDateTime}"
+  }
+
+  template_body = <<STACK
+  {
+    "Resources": {
+        "DPP4706J": {
+            "Type" : "AWS::DataPipeline::Pipeline",
+            "Properties" : {
+                "Activate" : true,
+                "Description" : "",
+                "Name" :  { "Ref" : "myDataPipelineName" },
+                "PipelineObjects" : [
+                    {
+                        "Id": "Default",
+                        "Name": "Default",
+                        "Fields": [
+                            {
+                                "Key": "resourceRole",
+                                "StringValue": "DataPipelineDefaultResourceRole"
+                            },
+                            {
+                                "Key": "role",
+                                "StringValue": "DataPipelineDefaultRole"
+                            },
+                            {
+                                "Key" : "scheduleType",
+                                "StringValue": "cron"
+                            },
+                            {
+                                "Key" : "type",
+                                "StringValue": "Default"
+                            },
+                            {
+                                "Key" : "pipelineLogUri",
+                                "StringValue": { "Ref" : "myS3PipelineLogUrl" }
+                            },
+                            {
+                                "Key": "schedule",
+                                "RefValue": "DefaultSchedule"
+                            }
+                        ]
+                    },
+                    {
+                        "Id": "DefaultSchedule",
+                        "Name": "RunDaily",
+                        "Fields": [
+                        {
+                            "Key": "startDateTime",
+                            "StringValue": { "Ref" : "myStartDateTime" }
+                        },
+                        {
+                            "Key": "type",
+                            "StringValue": "Schedule"
+                        },
+                        {
+                            "Key": "period",
+                            "StringValue": "1 Day"
+                        }
+                        ]
+                    },
+                    {
+                        "Id": "EmrClusterSqoop",
+                        "Name": "EmrClusterSqoop",
+                        "Fields": [
+                            {
+                              "Key": "releaseLabel",
+                              "StringValue": "emr-5.12.0"
+                            },
+                            {
+                              "Key": "applications",
+                              "StringValue": "sqoop"
+                            },
+                            {
+                              "Key": "terminateAfter",
+                              "StringValue": "1 hours"
+                            },
+                            {
+                              "Key": "type",
+                              "StringValue": "EmrCluster"
+                            },
+                            {
+                              "Key": "masterInstanceType",
+                              "StringValue": { "Ref" : "myEmrMasterInstanceType" }
+                            },
+                            {
+                              "Key": "coreInstanceType",
+                              "StringValue":  { "Ref" : "myEmrCoreInstanceType" }
+                            },
+                            {
+                              "Key": "coreInstanceCount",
+                              "StringValue": { "Ref" : "myEmrCoreInstanceCount" }
+                            }
+                        ]
+                    },
+                    {
+                        "Id": "SqoopActivity",
+                        "Name": "SqoopActivity",
+                        "Fields": [
+                            {
+                            "Key": "runsOn",
+                            "RefValue": "EmrClusterSqoop"
+                            },
+                            {
+                            "Key": "type",
+                            "StringValue": "ShellCommandActivity"
+                            },
+                            {
+                            "Key": "onFail",
+                            "RefValue": "FailureNotify"
+                            },
+                            {
+                            "Key": "onSuccess",
+                            "RefValue": "SuccessNotify"
+                            },
+                            {
+                            "Key": "command",
+                            "StringValue": 
+                            { 
+                            "Fn::Join": ["", [ "sudo aws s3 cp ", { "Ref" : "myJDBCDriverUrl" }," /usr/lib/sqoop/lib/ && aws s3 sync ", { "Ref" : "myS3SqoopJobStateUrl" }, "/ ~/.sqoop   &&  sudo aws s3 cp s3://engenharia-informacao/sqoop/conf/sqoop-site.xml /usr/lib/sqoop/conf/sqoop-site.xml && hadoop fs -mkdir /user/kroton && sqoop job --exec ", { "Ref" : "myDbTable" }, "_job -- -- --schema '", { "Ref" : "myDbSchema" } ,"' && aws s3 sync ~/.sqoop/. ", { "Ref" : "myS3SqoopJobStateUrl" }, " && hadoop distcp /user/kroton* ",{ "Ref" : "myS3ResultDataPath" } ] ] }
+                            }
+                        ]
+                    },
+                    {  
+                        "Id" : "FailureNotify",
+                        "Name" : "FailureNotify",
+                        "Fields": [
+                            {
+                            "Key": "type",
+                            "StringValue": "SnsAlarm"
+                            },
+                            {
+                            "Key": "subject",
+                            "StringValue": 
+                                {
+                                    "Fn::Join": [" ", [ "[FAILED]", { "Ref" : "myDataPipelineName" }, { "Ref" : "myDbSchema" } , { "Ref" : "myDbTable" }  ]]
+                                }
+                            },
+                            {
+                            "Key": "message",
+                            "StringValue":  "Failed #{node.@scheduledStartTime} #{node.@scheduledEndTime} #{node.errorMessage}"
+                            },
+                            {
+                            "Key": "topicArn",
+                            "StringValue": "arn:aws:sns:us-east-1:516136573270:SnsDataPipeline"
+                            }
+                        ]
+                    },
+                    {
+                        "Id" : "SuccessNotify",
+                        "Name" : "SuccessNotify",
+                        "Fields": [
+                            {
+                            "Key": "type",
+                            "StringValue": "SnsAlarm"
+                            },
+                            {
+                            "Key": "subject",
+                            "StringValue": 
+                                {
+                                    "Fn::Join": [" ", [ "[SUCCESS]", { "Ref" : "myDataPipelineName" }, { "Ref" : "myDbSchema" } , { "Ref" : "myDbTable" }  ]]
+                                }
+                            },
+                            {
+                            "Key": "message",
+                            "StringValue":  "Success \n Tempo #{node.@scheduledStartTime}..#{node.@scheduledEndTime}"
+                            },
+                            {
+                            "Key": "topicArn",
+                            "StringValue": "arn:aws:sns:us-east-1:516136573270:SnsDataPipeline"
+                            }
+                        ]
+                    }
+                ]
+            }
+        }
+    },
+    
+    "Parameters" : {
+        "myEmrMasterInstanceType" : {
+            "Type" : "String",
+            "Default" : "m2.xlarge",
+            "Description" : "The EC2 instance type to use for the master node in the EMR cluster"
+        },
+        "myEmrCoreInstanceType" : {
+            "Type" : "String",
+            "Default" : "m2.xlarge",
+            "Description" : "The EC2 instance type to use for the core nodes in the EMR cluster"
+        },
+        "myEmrCoreInstanceCount" : {
+            "Type" : "String",
+            "Default" : "2",
+            "Description" : "The number of core nodes to launch in the EMR cluster"
+        },
+        "myDbTable" : {
+            "Type" : "String",
+            "Description" : "Table name from DB"
+        },
+        "myDbSchema" : {
+            "Type" : "String",
+            "Description" : "Schema name from DB"
+        },
+        "myS3ResultDataPath" : {
+            "Type" : "String",
+            "Description" : "S3 path to folder where the CSV data is stored"
+        },
+        "myS3PipelineLogUrl" : {
+            "Type" : "String",
+            "Description" : "S3 folder where log data generated by this pipeline will be written"
+        },
+        "myS3SqoopJobStateUrl" : {
+            "Type" : "String",
+            "Description" : "S3 folder where sqoop job state will be written"
+        },
+        "myJDBCDriverUrl" : {
+            "Type" : "String",
+            "Description" : "S3 JDBC driver location"
+        },
+        "myDataPipelineName": {
+            "Type" : "String",
+            "Description" : "Data Pipeline name"
+        },
+        "myStartDateTime": {
+            "Type" : "String",
+            "Description" : "Data Pipeline start date time"
+        }
+    }
+}
+
+
+STACK
+}

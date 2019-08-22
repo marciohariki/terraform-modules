@@ -1,0 +1,17 @@
+variable "EmrMasterInstanceType" {}
+variable "EmrCoreInstanceType" {}
+variable "EmrCoreInstanceCount" {}
+variable "DbUsername" {}
+variable "DbPassword" {}
+variable "DbTable" {}
+variable "DbSchema" {}
+variable "DBUrl" {}
+variable "DBTableColumnSplit" {}
+variable "FileNumMappers" {}
+variable "DBTableCheckColumn" {}
+variable "S3ResultDataPath" {}
+variable "S3PipelineLogUrl" {}
+variable "S3SqoopJobStateUrl" {}
+variable "JDBCDriverUrl" {}
+variable "DataPipelineName" {}
+variable "CloudFormationStackName" {}

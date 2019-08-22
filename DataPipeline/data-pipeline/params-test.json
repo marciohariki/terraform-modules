@@ -1,0 +1,50 @@
+[
+    {
+        "ParameterKey": "myDbUsername",
+        "ParameterValue": "studiare"
+    },
+    {
+        "ParameterKey": "myDbPassword",
+        "ParameterValue": "Strfdf23" 
+    },
+    {
+        "ParameterKey": "myDbTable",
+        "ParameterValue": "users" 
+    },
+    {
+        "ParameterKey": "myDbSchema",
+        "ParameterValue": "public" 
+    },
+    {
+        "ParameterKey": "myDBTableColumnSplit",
+        "ParameterValue": "id" 
+    },
+    {
+        "ParameterKey": "myDBUrl",
+        "ParameterValue": "jdbc:postgresql://studiaredb.crdfoewdcina.us-east-1.rds.amazonaws.com:5432/kroton_engenharias_prod_db" 
+    },
+    {
+        "ParameterKey": "myS3ResultDataPath",
+        "ParameterValue": "s3://kroton-analytics/hariki/raw/studiare/users" 
+    },
+    {
+        "ParameterKey": "myDBTableCheckColumn",
+        "ParameterValue": "id" 
+    },
+    {
+        "ParameterKey": "myS3SqoopJobStateUrl",
+        "ParameterValue": "s3://engenharia-informacao/hariki/raw/studiare/users" 
+    },
+    {
+        "ParameterKey": "myS3PipelineLogUrl",
+        "ParameterValue": "s3://engenharia-informacao/data_pipeline" 
+    },
+    {
+        "ParameterKey": "myJDBCDriverUrl",
+        "ParameterValue": "s3://engenharia-informacao/drivers/sqljdbc42.jar" 
+    },
+    {
+        "ParameterKey": "myDataPipelineName",
+        "ParameterValue": "Studiare - User Ingestion" 
+    }
+]

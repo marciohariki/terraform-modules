@@ -1,0 +1,11 @@
+S3PipelineLogUrl = "s3://engenharia-informacao/data_pipeline"
+
+DataPipelineName = "Kroton - Sqoop Ingestion"
+
+pythonScript = "/home/hadoop/bin/sqoop/run_scoop.py"
+
+pythonScriptProp = "/home/hadoop/bin/sqoop/run_scoop.json"
+
+tableIngestion = "avaliar_presencial_nps avaliar_presencial_npsindividual avaliar_presencial_coordenadores avaliar_presencial_avaliacao avaliar_presencial_modalidade avaliar_presencial_marca avaliar_presencial_regional avaliar_presencial_grupo avaliar_presencial_unidade avaliar_presencial_curso avaliar_presencial_areaconhecimento avaliar_presencial_disciplina avaliar_presencial_CRITERIOBRASILINDIVIDUAL avaliar_presencial_INDICADOR avaliar_ead_NPS_CURSO avaliar_ead_NPS_GRUPO avaliar_ead_NPS_MARCA avaliar_ead_NPS_MODALIDADE avaliar_ead_NPS_POLO avaliar_ead_NPS_REGIONAL avaliar_ead_NPS_TIPOUNIDADE avaliar_ead_NPS_TIPOUNIDADEMARCA avaliar_ead_NPS_TUTOR avaliar_ead_BASEBRUTA_EAD avaliar_ead_INDICADOR avaliar_ead_DIMENSAO avaliar_ead_INDICE avaliar_ead_MARCA avaliar_ead_MODALIDADE avaliar_ead_REGIONAL avaliar_ead_GRUPO avaliar_ead_UNIDADE"
+
+CloudFormationStackName = "KrotonSqoopIngestion"

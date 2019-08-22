@@ -1,0 +1,8 @@
+*.tfstate*
+*.tfvars
+*.terraform/
+*.terraform/
+*.idea/
+*.vscode/
+fabric8-analytics.log
+Redshift/state\.tf~HEAD

@@ -1,0 +1,34 @@
+[
+    {
+        "ParameterKey": "myDbTable",
+        "ParameterValue": "users" 
+    },
+    {
+        "ParameterKey": "myDbSchema",
+        "ParameterValue": "public" 
+    },
+    {
+        "ParameterKey": "myS3ResultDataPath",
+        "ParameterValue": "s3://kroton-analytics/hariki/raw/studiare/users" 
+    },
+    {
+        "ParameterKey": "myS3SqoopJobStateUrl",
+        "ParameterValue": "s3://engenharia-informacao/hariki/raw/studiare/users" 
+    },
+    {
+        "ParameterKey": "myS3PipelineLogUrl",
+        "ParameterValue": "s3://engenharia-informacao/data_pipeline" 
+    },
+    {
+        "ParameterKey": "myJDBCDriverUrl",
+        "ParameterValue": "s3://engenharia-informacao/drivers/sqljdbc42.jar" 
+    },
+    {
+        "ParameterKey": "myDataPipelineName",
+        "ParameterValue": "Studiare - User Ingestion Incremental" 
+    },
+    {
+        "ParameterKey": "myStartDateTime",
+        "ParameterValue": "2018-03-29T06:00:00" 
+    }
+]
